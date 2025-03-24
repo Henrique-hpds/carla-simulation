@@ -17,13 +17,113 @@ def read_data(file_path):
             data.append(row)
     return data
 
-def plot_inercial_data(data, experiment_dir, save_plot_data=True):
-    pass
+def plot_gnss(gnss_data, experiment_dir):
+    timestamps = [float(row[0]) for row in gnss_data[1:]]
+    latitudes = [float(row[1]) for row in gnss_data[1:]]
+    longitudes = [float(row[2]) for row in gnss_data[1:]]
+    altitudes = [float(row[3]) for row in gnss_data[1:]]
+
+    plt.figure(figsize=(10, 6))
+
+    plt.subplot(3, 1, 1)
+    plt.plot(timestamps, latitudes, label='Latitude')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Latitude (degrees)')
+    plt.legend()
+
+    plt.subplot(3, 1, 2)
+    plt.plot(timestamps, longitudes, label='Longitude')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Longitude (degrees)')
+    plt.legend()
+
+    plt.subplot(3, 1, 3)
+    plt.plot(timestamps, altitudes, label='Altitude')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Altitude (m)')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(f'{experiment_dir}/gnss_plot.png')
+
+def plot_imu(imu_data, experiment_dir):
+    timestamps = [float(row[0]) for row in imu_data[1:]]
+    accelerometers = [eval(row[1]) for row in imu_data[1:]]
+    gyroscopes = [eval(row[2]) for row in imu_data[1:]]
+    compasses = [float(row[3]) for row in imu_data[1:]]
+
+    accel_x = [accel.x for accel in accelerometers]
+    accel_y = [accel.y for accel in accelerometers]
+    accel_z = [accel.z for accel in accelerometers]
+
+    gyro_x = [gyro.x for gyro in gyroscopes]
+    gyro_y = [gyro.y for gyro in gyroscopes]
+    gyro_z = [gyro.z for gyro in gyroscopes]
+
+    # Plot Accelerometer Data
+    plt.figure(figsize=(10, 12))
+
+    plt.suptitle('Acceletometer Data')
+
+    plt.subplot(3, 1, 1)
+    plt.plot(timestamps, accel_x, label='Acceleration (m/s²)')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Acceleration X (m/s²)')
+    plt.legend()
+
+    plt.subplot(3, 1, 2)
+    plt.plot(timestamps, accel_y, label='Acceleration (m/s²)', color='orange')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Acceleration Y (m/s²)')
+    plt.legend()
+
+    plt.subplot(3, 1, 3)
+    plt.plot(timestamps, accel_z, label='Acceleration (m/s²)', color='green')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Acceleration Z (m/s²)')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(f'{experiment_dir}/accel_plot.png')
+
+    # Plot Gyroscope Data
+    plt.figure(figsize=(10, 12))
+
+    plt.subplot(3, 1, 1)
+    plt.plot(timestamps, gyro_x, label='Eixo X (rad/s)')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Gyroscope X (rad/s)')
+    plt.legend()
+
+    plt.subplot(3, 1, 2)
+    plt.plot(timestamps, gyro_y, label='Eixo Y (rad/s)', color='orange')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Gyroscope Y (rad/s)')
+    plt.legend()
+
+    plt.subplot(3, 1, 3)
+    plt.plot(timestamps, gyro_z, label='Eixo Z (rad/s)', color='green')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Gyroscope Z (rad/s)')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(f'{experiment_dir}/gyro_plot.png')
+
+    # Plot Compass Data
+    plt.figure(figsize=(10, 6))
+    plt.plot(timestamps, compasses, label='Compass')
+    plt.xlabel('Timestamp (s)')
+    plt.ylabel('Compass (degrees)')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f'{experiment_dir}/compass_plot.png')
 
 def inertial_data(tick = 0.05, sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang', save_data=True, plot_data=True):
 
     gnss_data_list = []
     imu_data_list = []
+    actor_list = []
     
     try:
         # conectar ao serverside do CARLA
@@ -44,7 +144,7 @@ def inertial_data(tick = 0.05, sim_time = 300, town='Town01', vehicle='vehicle.f
         # cria lista de atores
         # importante para destruir os atores ao final do script,
         # evitando que eles continuem ativos no simulador
-        actor_list = [ego_vehicle]
+        actor_list.append(ego_vehicle)
 
         # --------------
         # Add GNSS sensor to ego vehicle. 
@@ -60,8 +160,7 @@ def inertial_data(tick = 0.05, sim_time = 300, town='Town01', vehicle='vehicle.f
         print('created %s' % ego_gnss.type_id)
 
         def gnss_callback(gnss):
-            timestamp = time()
-            gnss_data_list.append([timestamp, 'GNSS', gnss.latitude, gnss.longitude, gnss.altitude])
+            gnss_data_list.append([gnss.timestamp, gnss.latitude, gnss.longitude, gnss.altitude])
             print("GNSS measure:\n"+str(gnss)+'\n')
         ego_gnss.listen(lambda gnss: gnss_callback(gnss))
 
@@ -79,8 +178,7 @@ def inertial_data(tick = 0.05, sim_time = 300, town='Town01', vehicle='vehicle.f
         print('created %s' % ego_imu.type_id)
 
         def imu_callback(imu):
-            timestamp = time()
-            imu_data_list.append([timestamp, 'IMU', imu.accelerometer, imu.gyroscope, imu.compass])
+            imu_data_list.append([imu.timestamp, imu.accelerometer, imu.gyroscope, imu.compass])
             print("IMU measure:\n"+str(imu)+'\n')
         ego_imu.listen(lambda imu: imu_callback(imu))
 
@@ -91,9 +189,15 @@ def inertial_data(tick = 0.05, sim_time = 300, town='Town01', vehicle='vehicle.f
 
         if save_data:
             os.makedirs(experiment_dir)
-
+            with open(gnss_filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['timestamp', 'latitude', 'longitude', 'altitude'])
+            with open(imu_filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['timestamp', 'accelerometer', 'gyroscope', 'compass'])
+        
         count = 0
-        while count < sim_time:
+        while count <= sim_time:
             count += tick
             world.tick()  # Avança o simulador em um passo
             sleep(tick)
@@ -108,15 +212,20 @@ def inertial_data(tick = 0.05, sim_time = 300, town='Town01', vehicle='vehicle.f
                         writer = csv.writer(csvfile)
                         writer.writerows(imu_data_list)
                         imu_data_list.clear()
+        
 
         if plot_data:
             gnss_data = read_data(gnss_filename)
             imu_data = read_data(imu_filename)
-            plot_inercial_data(gnss_data, experiment_dir)
-            plot_inercial_data(imu_data, experiment_dir)
+            plot_gnss(gnss_data, experiment_dir)
+            plot_imu(imu_data, experiment_dir)
 
-    except KeyboardInterrupt:
-        client.apply_batch([carla.command.DestroyActor(x) for x in actor_list])
+        print("Dados salvos em: ", experiment_dir)
+
+    finally:
+        for x in actor_list:
+            if x is not None:
+                x.destroy()
 
 if __name__ == "__main__":
     inertial_data(sim_time=5)
