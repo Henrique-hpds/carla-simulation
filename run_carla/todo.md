@@ -4,3 +4,6 @@
     - Funcionando
 
 - Tentar pegar dados, plotar com matplotlib e exportar para csv
+
+- Amostrar na taxa de Nyquist?
+    - Pegar dados já coletados, aplicar fft, calcular ws =2wm e Ts = pi/wm 

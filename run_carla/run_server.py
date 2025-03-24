@@ -63,7 +63,7 @@ def main(args: Dict[str, bool]):
 
         world = client.get_world()
         settings = world.get_settings()
-        settings.synchronous_mode = False
+        settings.synchronous_mode = True
         settings.fixed_delta_seconds = 0.05
         settings.no_rendering_mode = False
 
@@ -71,8 +71,8 @@ def main(args: Dict[str, bool]):
 
         print("Configurações aplicadas" if args['verbose'] else "")
 
-        # traffic_manager = client.get_trafficmanager()
-        # traffic_manager.set_synchronous_mode(False)
+        traffic_manager = client.get_trafficmanager()
+        traffic_manager.set_synchronous_mode(True)
 
         while True:
             for i in range(4):
