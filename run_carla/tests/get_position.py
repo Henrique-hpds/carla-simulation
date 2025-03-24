@@ -6,7 +6,6 @@ import sys
 import os
 import matplotlib.pyplot as plt
 from datetime import datetime
-from pprint import pprint
 
 def get_position(sample_rate = 0.5, sim_time = 300, save_data = True):
     client = carla.Client('localhost', 2000)

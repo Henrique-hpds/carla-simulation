@@ -37,6 +37,7 @@ def start_UE4(env: Dict[str, str], verbose: bool = False, epic: bool = "Low") ->
         return None
 
     except KeyboardInterrupt:
+        print()
         process.terminate()
     except Exception as e:
         print(f"Erro ao iniciar o processo do Unreal Engine 4: {e}")
@@ -81,6 +82,7 @@ def main(args: Dict[str, bool]):
                 sleep(0.5)
     
     except KeyboardInterrupt:
+        print()
         os.kill(UE4_process.pid, 9)
     except Exception as e:
         print(f"Erro: {e}")
