@@ -9,6 +9,7 @@ import csv
 import os
 
 from plot import *
+from img2vid import *
 
 def inertial_data(sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang', save_data=True, plot_data=True, save_images=True):
 
@@ -94,18 +95,22 @@ def inertial_data(sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang',
                             'compass':0
                         }}
 
-    def rgb_image_creator(image,date_time):
-        cv.imwrite(f'images/rgb/rgb_{date_time}.png',image)
-    
-    def depth_image_creator(image,date_time):
-        cv.imwrite(f'images/depth/depth_{date_time}.png',image)
-
     timestamp = datetime.now().strftime('%d-%m-%Y_%Hh-%Mm-%Ss')
     experiment_dir = f'data/exp_{timestamp}'
     filename = experiment_dir + '/data.csv'
 
+    def rgb_image_creator(image,date_time):
+        cv.imwrite(f'{experiment_dir}/images/rgb/rgb_{date_time}.png',image)
+    
+    def depth_image_creator(image,date_time):
+        cv.imwrite(f'{experiment_dir}/images/depth/depth_{date_time}.png',image)
+
     if save_data:
         os.makedirs(experiment_dir)
+        os.makedirs(experiment_dir + '/images/rgb')
+        os.makedirs(experiment_dir + '/images/depth')
+        os.makedirs(experiment_dir + '/plots')
+        os.makedirs(experiment_dir + '/videos')
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['time', 'latitude', 'longitude', 'altitude', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z', 'compass', 'gps_x', 'gps_y', 'gps_z'])
@@ -171,14 +176,18 @@ def inertial_data(sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang',
         world.tick()
     
     if plot_data:
-        plot_gnss(filename)
-        plot_accel(filename)
-        plot_gyro(filename)
-        plot_gps(filename)
-        plot_compass(filename)
+        plot_gnss(filename, experiment_dir)
+        plot_accel(filename, experiment_dir)
+        plot_gyro(filename, experiment_dir)
+        plot_gps(filename, experiment_dir)
+        plot_compass(filename, experiment_dir)
+    # if save_images:
+    #     img2vid(experiment_dir + '/images/rgb', experiment_dir + '/videos/rgb.avi')
+    #     img2vid(experiment_dir + '/images/depth', experiment_dir + '/videos/depth.avi')
+
 
     for sensor in sensors:
         sensor.destroy()
 
 if __name__ == '__main__':
-    inertial_data(save_images=False)
+    inertial_data(save_images=True)
