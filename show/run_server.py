@@ -17,7 +17,8 @@ def start_UE4(env: Dict[str, str], verbose: bool = False, epic: bool = "Low") ->
         f.write('')
 
     try:
-        process = subprocess.Popen(f'../CarlaUE4.sh -RenderOffScreen --quality-level={epic}', shell=True, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        # process = subprocess.Popen(f'../CarlaUE4.sh -RenderOffScreen --quality-level={epic}', shell=True, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(["../CarlaUE4.sh", '-RenderOffScreen', '--quality-level=Epic'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         sleep(1)
         
@@ -53,28 +54,6 @@ def main(args: Dict[str, bool]):
         UE4_process = start_UE4(env, args['verbose'])
 
         sleep(10)
-        
-        try:
-            client = carla.Client('localhost', 2000)
-            print("Conectado ao servidor do CARLA" if args['verbose'] else "")
-        except Exception as e:
-            print(f"Erro ao conectar ao servidor do CARLA: {e}")
-            os.kill(UE4_process.pid, 9)
-            sys.exit(1)
-
-        world = client.get_world()
-        settings = world.get_settings()
-        settings.synchronous_mode = True
-        settings.fixed_delta_seconds = 0.05
-        # settings.fixed_delta_seconds = settings.max_substep_delta_time * settings.max_substeps # 0.1
-        settings.no_rendering_mode = False
-
-        world.apply_settings(settings)
-
-        print("Configurações aplicadas" if args['verbose'] else "")
-
-        # traffic_manager = client.get_trafficmanager()
-        # traffic_manager.set_synchronous_mode(True)
 
         while True:
             for i in range(4):

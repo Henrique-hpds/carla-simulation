@@ -9,7 +9,6 @@ import csv
 import os
 
 from plot import *
-from img2vid import *
 
 def inertial_data(sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang', save_data=True, plot_data=True, save_images=True):
 
@@ -17,6 +16,18 @@ def inertial_data(sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang',
 
     client = carla.Client('localhost',2000)
     world = client.load_world(town)
+
+    settings = world.get_settings()
+    settings.synchronous_mode = True
+    settings.fixed_delta_seconds = 0.05
+
+    world.apply_settings(settings)
+
+    traffic_manager = client.get_trafficmanager(8000)
+    traffic_manager.set_synchronous_mode(True)
+    traffic_manager.set_global_distance_to_leading_vehicle(2.0)
+
+
     weather = carla.WeatherParameters(
         cloudiness=0.0,
         precipitation=0.0,
@@ -33,13 +44,19 @@ def inertial_data(sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang',
     spawn_points = world.get_map().get_spawn_points()
 
     vehicle_bp = bp_lib.find('vehicle.audi.etron')
-    ego_vehicle = world.try_spawn_actor(vehicle_bp, spawn_points[79])
+    ego_vehicle = world.try_spawn_actor(vehicle_bp, random.choice(spawn_points))
+
+    for _ in range(1):  # Adiciona 10 veículos NPC
+        npc_bp = random.choice(bp_lib.filter('vehicle.*'))
+        spawn_point = random.choice(spawn_points)
+        world.try_spawn_actor(npc_bp, spawn_point)
+
 
     spectator = world.get_spectator()
     transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4,z=2.5)),ego_vehicle.get_transform().rotation)
     spectator.set_transform(transform)
 
-    ego_vehicle.set_autopilot(True) 
+    ego_vehicle.set_autopilot(True)
 
     # Add RGB camera
     camera_bp = bp_lib.find('sensor.camera.rgb') 
@@ -190,4 +207,4 @@ def inertial_data(sim_time = 300, town='Town01', vehicle='vehicle.ford.mustang',
         sensor.destroy()
 
 if __name__ == '__main__':
-    inertial_data(save_images=True)
+    inertial_data(sim_time=100, town="Town03", save_images=True)

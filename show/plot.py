@@ -130,9 +130,20 @@ def plot_gps(filename: str, experiment_dir: str):
     axs[1].scatter(gps_x[0], gps_y[0], label='Start', color='green', s=100)
     axs[1].scatter(gps_x[-1], gps_y[-1], label='End', color='orange', s=100)
 
+    # # Adicionar setas para indicar direção
+    # for i in range(0, len(gps_x) - 1, max(1, len(gps_x) // 50)):  # Adiciona setas espaçadas
+    #     axs[1].arrow(gps_x[i], gps_y[i], gps_x[i + 1] - gps_x[i], gps_y[i + 1] - gps_y[i],
+    #                  head_width=5, head_length=5, fc='black', ec='black', alpha=0.6)
+
     # Adicionar setas para indicar direção
     for i in range(0, len(gps_x) - 1, max(1, len(gps_x) // 50)):  # Adiciona setas espaçadas
-        axs[1].arrow(gps_x[i], gps_y[i], gps_x[i + 1] - gps_x[i], gps_y[i + 1] - gps_y[i],
+        dx = gps_x[i + 1] - gps_x[i]
+        dy = gps_y[i + 1] - gps_y[i]
+        norm = np.sqrt(dx**2 + dy**2)  # Normaliza o vetor
+        if norm > 0:  # Evita divisão por zero
+            dx /= norm
+            dy /= norm
+        axs[1].arrow(gps_x[i], gps_y[i], dx * 5, dy * 5,  # Escala o tamanho da seta
                      head_width=5, head_length=5, fc='black', ec='black', alpha=0.6)
 
     axs[1].set_xlabel('GPS X (m)')
