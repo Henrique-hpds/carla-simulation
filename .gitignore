@@ -7,3 +7,7 @@ Plugins
 PythonAPI
 Tools
 venv
+run_carla/data
+run_carla/_out
+__pycache__
+data
